@@ -14,7 +14,10 @@ export function PdfUploader() {
       setBusy(true);
       setError(null);
       try {
-        for (const file of Array.from(files)) {
+        const list: File[] = [];
+        for (let i = 0; i < files.length; i++) list.push(files[i]);
+        for (let i = 0; i < list.length; i++) {
+          const file = list[i];
           if (!file.name.toLowerCase().endsWith('.pdf')) continue;
           const buf = await file.arrayBuffer();
           let password: string | undefined;

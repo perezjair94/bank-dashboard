@@ -52,7 +52,10 @@ export async function parsePdf(
     const content = await page.getTextContent();
     let lastY: number | null = null;
     let line = '';
-    for (const item of content.items as Array<{ str: string; transform?: number[]; hasEOL?: boolean }>) {
+    const items = content.items as Array<{ str: string; transform?: number[]; hasEOL?: boolean }>;
+    for (let j = 0; j < items.length; j++) {
+      const item = items[j];
+      if (!item || typeof item.str !== 'string') continue;
       const y = item.transform ? item.transform[5] : null;
       if (lastY !== null && y !== null && Math.abs(y - lastY) > 2) {
         text += line.trim() + '\n';
