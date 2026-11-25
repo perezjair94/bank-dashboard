@@ -108,7 +108,7 @@ function normalizeDate(raw: string, periodYear: string): string | null {
 
 function parseAmount(raw: string): number | null {
   if (!raw) return null;
-  let s = raw.replace(/[^\d,.\-]/g, '');
+  let s = raw.replace(/[^\d,.-]/g, '');
   if (s.includes(',') && s.includes('.')) {
     if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
     else s = s.replace(/,/g, '');
@@ -135,10 +135,10 @@ function extractTransactions(text: string, bank: Bank, fileName: string): Transa
   const txs: Transaction[] = [];
   const periodYear = detectYear(text);
 
-  const nuRe = /^(\d{1,2}\s+[a-zñ]{3,4}\.?)\s{2,}(.+?)\s{2,}([+\-]?\$[\d.,]+)\s*$/i;
-  const nuReLoose = /^(\d{1,2}\s+[a-zñ]{3,4}\.?)\s+(.+?)\s+([+\-]?\$[\d.,]+)\s*$/i;
-  const nequiRe = /^(\d{4}\/\d{2}\/\d{2}|\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+(\$[+\-]?[\d.,]+)\s+(\$[\d.,]+)\s*$/;
-  const numericRe = /^(\d{2}[\/\-]\d{2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{2}[\/\-]\d{2})\s+(.+?)\s+(-?[\d.,]+)(?:\s+(-?[\d.,]+))?$/;
+  const nuRe = /^(\d{1,2}\s+[a-zñ]{3,4}\.?)\s{2,}(.+?)\s{2,}([+-]?\$[\d.,]+)\s*$/i;
+  const nuReLoose = /^(\d{1,2}\s+[a-zñ]{3,4}\.?)\s+(.+?)\s+([+-]?\$[\d.,]+)\s*$/i;
+  const nequiRe = /^(\d{4}\/\d{2}\/\d{2}|\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+(\$[+-]?[\d.,]+)\s+(\$[\d.,]+)\s*$/;
+  const numericRe = /^(\d{2}[/-]\d{2}[/-]\d{2,4}|\d{4}[/-]\d{2}[/-]\d{2})\s+(.+?)\s+(-?[\d.,]+)(?:\s+(-?[\d.,]+))?$/;
 
   let idx = 0;
   for (const line of lines) {

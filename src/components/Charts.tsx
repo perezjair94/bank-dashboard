@@ -33,8 +33,13 @@ export function Charts({ transactions }: { transactions: Transaction[] }) {
 
   const balanceLine = useMemo(() => {
     const sorted = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
-    let acc = 0;
-    return sorted.map((t) => { acc += t.amount; return { date: t.date, balance: Math.round(acc) }; });
+    const out: { date: string; balance: number }[] = [];
+    sorted.reduce((acc, t) => {
+      const next = acc + t.amount;
+      out.push({ date: t.date, balance: Math.round(next) });
+      return next;
+    }, 0);
+    return out;
   }, [transactions]);
 
   if (transactions.length === 0) return null;

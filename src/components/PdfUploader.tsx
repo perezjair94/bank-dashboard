@@ -32,7 +32,7 @@ export function PdfUploader() {
                   ? `Contraseña incorrecta para ${file.name}. Reintentar:`
                   : `Contraseña para ${file.name}:`;
                 const pw = window.prompt(msg);
-                if (!pw) throw new Error('Cancelado');
+                if (!pw) throw new Error('Cancelado', { cause: err });
                 password = pw;
               } else {
                 throw err;

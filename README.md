@@ -1,73 +1,67 @@
-# React + TypeScript + Vite
+# Bank Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A privacy-first personal finance dashboard. Drop in your bank statements (PDF) and get your transactions parsed, categorized and charted — **entirely in the browser**. No backend, no uploads, no accounts: your financial data never leaves your machine.
 
-Currently, two official plugins are available:
+Built for Colombian banks (Nu, Nequi, Bancolombia), whose statements are only available as PDFs.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **PDF parsing in the browser** with `pdf.js`, including **password-protected statements** (prompts for the password and retries).
+- **Automatic bank detection** from the statement text, with a parser per format (Nu, Nequi, and a generic date/amount parser as fallback).
+- **Robust amount parsing** for mixed number formats (`1.234,56`, `1,234.56`, `$+50.000`) and signed debits/credits.
+- **Rule-based categorization** (groceries, transport, subscriptions, utilities, taxes, transfers…) using regex rules that are easy to extend in [`src/lib/categorize.ts`](src/lib/categorize.ts).
+- **Local persistence** with IndexedDB (Dexie): statements survive page reloads, and re-uploading the same file replaces it instead of duplicating it.
+- **Filters** by text, excluded terms, category, type, bank, date range and amount range.
+- **Charts** (Recharts): spending by category, daily income vs. expenses, and cumulative balance.
+- **Export** the filtered transactions to CSV or JSON.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech stack
 
-## Expanding the ESLint configuration
+| Layer | Tools |
+|---|---|
+| UI | React 19 · TypeScript · Tailwind CSS v4 · lucide-react |
+| State | Zustand |
+| Storage | IndexedDB via Dexie |
+| PDF | pdfjs-dist |
+| Charts | Recharts |
+| Tooling | Vite · ESLint (typescript-eslint, react-hooks) |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## How it works
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+PDF file ──► pdf.js text extraction ──► line reconstruction (by Y position)
+         ──► bank detection ──► per-bank regex parsers ──► Transaction[]
+         ──► categorization ──► IndexedDB ──► Zustand store ──► filters ──► charts / table / export
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The key design decision is **zero server**: parsing bank statements involves highly sensitive data, so everything — text extraction, parsing, storage — runs client-side.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Project structure
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── lib/
+│   ├── parser.ts       # PDF text extraction, bank detection, transaction parsing
+│   ├── categorize.ts   # Regex-based category rules
+│   ├── db.ts           # Dexie (IndexedDB) schema
+│   ├── format.ts       # Currency/date formatting
+│   └── types.ts
+├── components/         # Uploader, filters, summary cards, charts, table, export
+├── store.ts            # Zustand store + filtering logic
+└── App.tsx
+```
+
+## Getting started
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # type-check + production build
+npm run lint
+```
+
+## Roadmap
+
+- Support more banks (Bancolombia-specific parser, Davivienda, credit card statements)
+- User-editable categories and rules
+- Month-over-month comparison and budgets
